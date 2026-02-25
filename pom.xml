@@ -10,7 +10,7 @@
     <version>1.0.0</version>
     <name>Bot Properties</name>
     <description>Simple type-safe bot.properties loader for Java</description>
-    <url>https://github.com/YOUR_USERNAME/bot-properties</url>
+    <url>https://github.com/maxytmaxyt/bot-properties</url>
 
     <licenses>
         <license>
@@ -27,9 +27,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/YOUR_USERNAME/bot-properties.git</connection>
-        <developerConnection>scm:git:ssh://github.com/YOUR_USERNAME/bot-properties.git</developerConnection>
-        <url>https://github.com/YOUR_USERNAME/bot-properties</url>
+        <connection>scm:git:git://github.com/maxytmaxyt/bot-properties.git</connection>
+        <developerConnection>scm:git:ssh://github.com/maxytmaxyt/bot-properties.git</developerConnection>
+        <url>https://github.com/maxytmaxyt/bot-properties</url>
     </scm>
 
     <properties>
