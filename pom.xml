@@ -8,6 +8,8 @@
     <groupId>de.max</groupId>
     <artifactId>bot-properties</artifactId>
     <version>1.0.0</version>
+    <packaging>jar</packaging>
+
     <name>Bot Properties</name>
     <description>Simple type-safe bot.properties loader for Java</description>
     <url>https://github.com/maxytmaxyt/bot-properties</url>
@@ -16,6 +18,7 @@
         <license>
             <name>MIT License</name>
             <url>https://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
         </license>
     </licenses>
 
@@ -23,13 +26,14 @@
         <developer>
             <id>max</id>
             <name>Max</name>
+            <email>danielduesentrieb456@outlook.de</email>
         </developer>
     </developers>
 
     <scm>
         <connection>scm:git:git://github.com/maxytmaxyt/bot-properties.git</connection>
         <developerConnection>scm:git:ssh://github.com/maxytmaxyt/bot-properties.git</developerConnection>
-        <url>https://github.com/YOUR_USERNAME/bot-properties</url>
+        <url>https://github.com/maxytmaxyt/bot-properties</url>
     </scm>
 
     <properties>
@@ -38,82 +42,25 @@
     </properties>
 
     <dependencies>
-        <!-- Falls später JDA nötig, kannst du hier hinzufügen -->
-    </dependencies>
+        </dependencies>
 
     <distributionManagement>
-        <!-- GitHub Packages -->
-        <repository>
-            <id>github</id>
-            <url>https://maven.pkg.github.com/maxytmaxyt/bot-properties</url>
-        </repository>
-
-        <!-- Maven Central Snapshots -->
         <snapshotRepository>
             <id>ossrh</id>
             <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
     </distributionManagement>
 
     <build>
         <plugins>
-            <!-- Quellen JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>3.3.0</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Javadoc JAR -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.6.3</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- GPG Signierung -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>3.2.4</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Nexus Staging für Maven Central -->
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.13</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
             </plugin>
         </plugins>
     </build>
@@ -121,11 +68,36 @@
     <profiles>
         <profile>
             <id>release</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.3.0</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.6.3</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
@@ -137,12 +109,29 @@
                                 <goals>
                                     <goal>sign</goal>
                                 </goals>
+                                <configuration>
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
                             </execution>
                         </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.13</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
         </profile>
     </profiles>
-
 </project>
