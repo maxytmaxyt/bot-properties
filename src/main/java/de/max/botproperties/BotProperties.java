@@ -1,88 +1,108 @@
 package de.max.botproperties;
 
-import java.io.FileInputStream;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Combined BotProperties Library
- * Minimalist and type-safe property loader for Java Bots.
+ * Hochwertiger Property-Loader im Stil von dotenv.
+ * Unterstützt .properties und .env Formate sowie System-Overrides.
  */
 public class BotProperties {
-    private static final Logger LOGGER = Logger.getLogger(BotProperties.class.getName());
-    private final Properties properties = new Properties();
+    private static final Logger LOGGER = Logger.getLogger("BotConfig");
+    private final Map<String, String> config = new HashMap<>();
+    private final String sourceName;
 
-    private BotProperties(String fileName) {
-        loadProperties(fileName);
+    private BotProperties(String path, boolean silent) {
+        this.sourceName = path;
+        if (Files.exists(Paths.get(path))) {
+            loadFromFile(path);
+        } else if (!silent) {
+            LOGGER.log(Level.WARNING, "Konfigurationsdatei {0} nicht gefunden. Nutze nur System-Umgebungsvariablen.", path);
+        }
     }
 
     /**
-     * Factory-Methode zum Laden der Eigenschaften.
-     * @param fileName Name der Datei (z.B. "bot.properties")
-     * @return Eine Instanz von BotProperties
+     * Erstellt eine neue Instanz. Sucht standardmäßig nach der Datei.
      */
-    public static BotProperties load(String fileName) {
-        return new BotProperties(fileName);
+    public static BotProperties load(String path) {
+        return new BotProperties(path, false);
     }
 
-    private void loadProperties(String fileName) {
-        try (InputStream input = new FileInputStream(fileName)) {
-            properties.load(input);
-            LOGGER.info("Konfiguration erfolgreich aus " + fileName + " geladen.");
+    /**
+     * Lädt die Datei und parst sie (unterstützt KEY=VALUE und Kommentare).
+     */
+    private void loadFromFile(String path) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
+            String line;
+            int lineNum = 0;
+            while ((line = reader.readLine()) != null) {
+                lineNum++;
+                line = line.trim();
+                if (line.isEmpty() || line.startsWith("#") || line.startsWith("//")) continue;
+
+                String[] parts = line.split("=", 2);
+                if (parts.length == 2) {
+                    config.put(parts[0].trim(), parts[1].trim());
+                } else {
+                    LOGGER.log(Level.WARNING, "Ungültiges Format in {0} Zeile {1}: {2}", new Object[]{path, lineNum, line});
+                }
+            }
+            LOGGER.log(Level.INFO, "Erfolgreich {0} Einträge aus {1} geladen.", new Object[]{config.size(), path});
         } catch (IOException e) {
-            throw new BotPropertyException("Fehler beim Laden der Datei: " + fileName, e);
+            throw new ConfigException("Fehler beim Lesen der Datei: " + path, e);
         }
     }
 
     /**
-     * Holt einen String-Wert.
+     * Kern-Logik: Sucht in Datei, dann in Umgebungsvariablen (UPPER_CASE).
      */
-    public String getProperty(String key) {
-        String value = properties.getProperty(key);
-        if (value == null) {
-            LOGGER.warning("Property '" + key + "' nicht gefunden!");
+    public Optional<String> get(String key) {
+        // 1. Priorität: Datei
+        String value = config.get(key);
+        
+        // 2. Priorität: System Environment (z.B. bot.token -> BOT_TOKEN)
+        if (value == null || value.isEmpty()) {
+            String envKey = key.toUpperCase().replace(".", "_").replace("-", "_");
+            value = System.getenv(envKey);
         }
-        return value;
+        
+        return Optional.ofNullable(value);
     }
 
     /**
-     * Holt einen String-Wert mit Fallback.
+     * Holt einen Wert oder wirft eine detaillierte Exception, wenn er fehlt.
      */
-    public String getProperty(String key, String defaultValue) {
-        return properties.getProperty(key, defaultValue);
+    public String getOrThrow(String key) {
+        return get(key).orElseThrow(() -> new ConfigException(
+            String.format("Kritischer Fehler: Konfiguration '%s' fehlt in %s und im System-Environment!", key, sourceName)
+        ));
     }
 
-    /**
-     * Holt einen Integer-Wert.
-     */
     public int getInt(String key) {
-        String value = getProperty(key);
+        String val = getOrThrow(key);
         try {
-            return Integer.parseInt(value);
+            return Integer.parseInt(val);
         } catch (NumberFormatException e) {
-            throw new BotPropertyException("Property '" + key + "' ist keine gültige Zahl: " + value);
+            throw new ConfigException("Key '" + key + "' soll eine Zahl sein, ist aber: " + val);
         }
     }
 
-    /**
-     * Holt einen Boolean-Wert.
-     */
     public boolean getBoolean(String key) {
-        return Boolean.parseBoolean(getProperty(key));
+        String val = getOrThrow(key);
+        return val.equalsIgnoreCase("true") || val.equalsIgnoreCase("1") || val.equalsIgnoreCase("yes");
     }
 
-    /**
-     * Interne Exception-Klasse für Konfigurationsfehler.
-     */
-    public static class BotPropertyException extends RuntimeException {
-        public BotPropertyException(String message) {
-            super(message);
-        }
-
-        public BotPropertyException(String message, Throwable cause) {
-            super(message, cause);
-        }
+    // --- Exception Handling ---
+    public static class ConfigException extends RuntimeException {
+        public ConfigException(String message) { super(message); }
+        public ConfigException(String message, Throwable cause) { super(message, cause); }
     }
 }
