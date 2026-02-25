@@ -1,62 +1,88 @@
 package de.max.botproperties;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.Map;
+import java.util.Properties;
+import java.util.logging.Logger;
 
-public final class BotProperties {
+/**
+ * Combined BotProperties Library
+ * Minimalist and type-safe property loader for Java Bots.
+ */
+public class BotProperties {
+    private static final Logger LOGGER = Logger.getLogger(BotProperties.class.getName());
+    private final Properties properties = new Properties();
 
-    private static Map<String, String> properties;
-    private static boolean loaded = false;
+    private BotProperties(String fileName) {
+        loadProperties(fileName);
+    }
 
-    private BotProperties() {}
+    /**
+     * Factory-Methode zum Laden der Eigenschaften.
+     * @param fileName Name der Datei (z.B. "bot.properties")
+     * @return Eine Instanz von BotProperties
+     */
+    public static BotProperties load(String fileName) {
+        return new BotProperties(fileName);
+    }
 
-    public static synchronized BotProperties load() {
-        if (loaded)
-            return new BotProperties();
-
-        try (InputStream input = new FileInputStream("bot.properties")) {
-            properties = PropertyParser.parse(input);
-            loaded = true;
-        } catch (Exception e) {
-            throw new PropertyException("Could not load bot.properties", e);
+    private void loadProperties(String fileName) {
+        try (InputStream input = new FileInputStream(fileName)) {
+            properties.load(input);
+            LOGGER.info("Konfiguration erfolgreich aus " + fileName + " geladen.");
+        } catch (IOException e) {
+            throw new BotPropertyException("Fehler beim Laden der Datei: " + fileName, e);
         }
-
-        return new BotProperties();
     }
 
-    private static void ensureLoaded() {
-        if (!loaded)
-            throw new PropertyException("bot.properties not loaded. Call BotProperties.load() first.");
+    /**
+     * Holt einen String-Wert.
+     */
+    public String getProperty(String key) {
+        String value = properties.getProperty(key);
+        if (value == null) {
+            LOGGER.warning("Property '" + key + "' nicht gefunden!");
+        }
+        return value;
     }
 
-    public String get(String key) {
-        ensureLoaded();
-        return properties.get(key);
+    /**
+     * Holt einen String-Wert mit Fallback.
+     */
+    public String getProperty(String key, String defaultValue) {
+        return properties.getProperty(key, defaultValue);
     }
 
-    public String getOrDefault(String key, String defaultValue) {
-        ensureLoaded();
-        return properties.getOrDefault(key, defaultValue);
-    }
-
+    /**
+     * Holt einen Integer-Wert.
+     */
     public int getInt(String key) {
-        ensureLoaded();
+        String value = getProperty(key);
         try {
-            return Integer.parseInt(properties.get(key));
-        } catch (Exception e) {
-            throw new PropertyException("Invalid int value for key: " + key);
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            throw new BotPropertyException("Property '" + key + "' ist keine gültige Zahl: " + value);
         }
     }
 
+    /**
+     * Holt einen Boolean-Wert.
+     */
     public boolean getBoolean(String key) {
-        ensureLoaded();
-        return Boolean.parseBoolean(properties.get(key));
+        return Boolean.parseBoolean(getProperty(key));
     }
 
-    public Map<String, String> asMap() {
-        ensureLoaded();
-        return Collections.unmodifiableMap(properties);
+    /**
+     * Interne Exception-Klasse für Konfigurationsfehler.
+     */
+    public static class BotPropertyException extends RuntimeException {
+        public BotPropertyException(String message) {
+            super(message);
+        }
+
+        public BotPropertyException(String message, Throwable cause) {
+            super(message, cause);
+        }
     }
 }
