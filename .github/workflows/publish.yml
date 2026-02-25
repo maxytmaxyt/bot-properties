@@ -31,6 +31,6 @@ jobs:
           settings-path: ${{ github.workspace }}
 
       - name: Build & Deploy to GitHub Packages
-        run: mvn -B clean deploy -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/${{ github.repository }}
+        run: mvn -B clean deploy -Dgpg.skip=true -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/${{ github.repository }}
         env:
           GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
