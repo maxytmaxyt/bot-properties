@@ -1,4 +1,4 @@
-name: Manual Publish
+name: Manual Publish (GitHub Packages)
 
 on:
   workflow_dispatch:
@@ -25,32 +25,13 @@ jobs:
       - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 21
-          server-id: ossrh
-          server-username: MAVEN_USERNAME
-          server-password: MAVEN_PASSWORD
-          # [span_0](start_span)Verwendet deinen privaten GPG-Key aus Source 1[span_0](end_span)
-          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          # WICHTIG: Dies ist der NAME der Env-Variable, nicht der Wert selbst
-          gpg-passphrase: MAVEN_GPG_PASSPHRASE 
-        env:
-          # Hier wird der tatsächliche Wert (T!g3r$B1rD#2026-multi) zugewiesen
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-
-      - name: Build & Deploy to Maven Central
-        run: |
-          mvn -B clean deploy -P release \
-            -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" \
-            -Dgpg.arguments='--pinentry-mode loopback'
-        env:
-          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          distribution: 'temurin'
+          java-version: '21'
+          # Erstellt automatisch die server-Einträge in der settings.xml
+          server-id: github 
 
       - name: Publish to GitHub Packages
-        run: |
-          mvn -B deploy \
-            -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/${{ github.repository }} \
-            -DskipTests
+        run: mvn -B deploy
         env:
+          # Der GITHUB_TOKEN wird automatisch von GitHub bereitgestellt
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
