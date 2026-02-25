@@ -31,9 +31,25 @@ jobs:
           server-username: MAVEN_USERNAME
           server-password: MAVEN_PASSWORD
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+          # Hier lag der Fehler: Die Action braucht die Passphrase direkt 
+          # als Input, um den Key zu importieren.
+          gpg-passphrase: GPG_PASSPHRASE 
 
-      - name: Build & Deploy
+      - name: Build & Deploy to Maven Central
+        run: |
+          mvn -B clean deploy -P release \
+          -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" \
+          -Dgpg.arguments='--pinentry-mode loopback'
+        env:
+          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          # Diese Env-Variable wird für den Import innerhalb der Action genutzt
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Publish to GitHub Packages
+        run: mvn -B deploy -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/${{ github.repository }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: mvn -B clean deploy -P release
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
