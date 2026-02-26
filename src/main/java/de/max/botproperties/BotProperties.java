@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
- * Utility class for loading bot configuration properties.
+ * High-performance property loader with environment variable priority.
  */
 public class BotProperties {
     private static final Logger LOGGER = Logger.getLogger("BotConfig");
@@ -52,7 +52,7 @@ public class BotProperties {
     }
 
     /**
-     * Retrieves a value by key. Priority: Environment > File.
+     * Resolves a value by key. Priority: Environment Variables > File.
      * @param key The configuration key.
      * @return An Optional containing the value if found.
      */
@@ -139,9 +139,19 @@ public class BotProperties {
      * Custom exception for configuration errors.
      */
     public static class ConfigException extends RuntimeException {
-        /** @param message The error message. */
-        public ConfigException(String message) { super(message); }
-        /** @param message The error message. @param cause The root cause. */
-        public ConfigException(String message, Throwable cause) { super(message, cause); }
+        /** * Exception with message.
+         * @param message The error message. 
+         */
+        public ConfigException(String message) { 
+            super(message); 
+        }
+
+        /** * Exception with message and cause.
+         * @param message The error message. 
+         * @param cause The root cause.
+         */
+        public ConfigException(String message, Throwable cause) { 
+            super(message, cause); 
+        }
     }
 }
