@@ -1,89 +1,84 @@
 package de.max.botproperties;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
-/**
- * Hochwertiger Property-Loader im Stil von dotenv.
- * Unterstützt .properties und .env Formate sowie System-Overrides.
- */
 public class BotProperties {
     private static final Logger LOGGER = Logger.getLogger("BotConfig");
-    private final Map<String, String> config = new HashMap<>();
-    private final String sourceName;
+    private final Map<String, String> fileConfig = new HashMap<>();
+    private final String sourcePath;
 
-    private BotProperties(String path, boolean silent) {
-        this.sourceName = path;
+    private BotProperties(String path) {
+        this.sourcePath = path;
         if (Files.exists(Paths.get(path))) {
-            loadFromFile(path);
-        } else if (!silent) {
-            LOGGER.log(Level.WARNING, "Konfigurationsdatei {0} nicht gefunden. Nutze nur System-Umgebungsvariablen.", path);
+            loadFile(path);
+        } else {
+            LOGGER.log(Level.INFO, "No config file found at {0}. Relying on environment variables.", path);
         }
     }
 
-    /**
-     * Erstellt eine neue Instanz. Sucht standardmäßig nach der Datei.
-     */
     public static BotProperties load(String path) {
-        return new BotProperties(path, false);
+        return new BotProperties(path);
     }
 
-    /**
-     * Lädt die Datei und parst sie (unterstützt KEY=VALUE und Kommentare).
-     */
-    private void loadFromFile(String path) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
-            String line;
-            int lineNum = 0;
-            while ((line = reader.readLine()) != null) {
-                lineNum++;
+    private void loadFile(String path) {
+        try {
+            List<String> lines = Files.readAllLines(Paths.get(path));
+            for (String line : lines) {
                 line = line.trim();
                 if (line.isEmpty() || line.startsWith("#") || line.startsWith("//")) continue;
 
                 String[] parts = line.split("=", 2);
                 if (parts.length == 2) {
-                    config.put(parts[0].trim(), parts[1].trim());
-                } else {
-                    LOGGER.log(Level.WARNING, "Ungültiges Format in {0} Zeile {1}: {2}", new Object[]{path, lineNum, line});
+                    fileConfig.put(parts[0].trim(), parts[1].trim());
                 }
             }
-            LOGGER.log(Level.INFO, "Erfolgreich {0} Einträge aus {1} geladen.", new Object[]{config.size(), path});
+            LOGGER.log(Level.INFO, "Loaded {0} properties from {1}", new Object[]{fileConfig.size(), path});
         } catch (IOException e) {
-            throw new ConfigException("Fehler beim Lesen der Datei: " + path, e);
+            throw new ConfigException("Failed to read config file: " + path, e);
         }
     }
 
     /**
-     * Kern-Logik: Sucht in Datei, dann in Umgebungsvariablen (UPPER_CASE).
+     * Resolves the value. Priority: 1. System Environment, 2. File
      */
     public Optional<String> get(String key) {
-        // 1. Priorität: Datei
-        String value = config.get(key);
-        
-        // 2. Priorität: System Environment (z.B. bot.token -> BOT_TOKEN)
-        if (value == null || value.isEmpty()) {
-            String envKey = key.toUpperCase().replace(".", "_").replace("-", "_");
-            value = System.getenv(envKey);
+        // Environment variables usually use UPPER_SNAKE_CASE (e.g., BOT_TOKEN for bot.token)
+        String envKey = key.toUpperCase().replace(".", "_").replace("-", "_");
+        String envValue = System.getenv(envKey);
+
+        if (envValue != null && !envValue.isEmpty()) {
+            return Optional.of(envValue);
         }
-        
-        return Optional.ofNullable(value);
+
+        return Optional.ofNullable(fileConfig.get(key));
     }
 
-    /**
-     * Holt einen Wert oder wirft eine detaillierte Exception, wenn er fehlt.
-     */
+    public String getOrDefault(String key, String defaultValue) {
+        return get(key).orElse(defaultValue);
+    }
+
     public String getOrThrow(String key) {
-        return get(key).orElseThrow(() -> new ConfigException(
-            String.format("Kritischer Fehler: Konfiguration '%s' fehlt in %s und im System-Environment!", key, sourceName)
-        ));
+        return get(key).orElseThrow(() -> new ConfigException("Missing required configuration: " + key));
+    }
+
+    // --- Type Specific Getters ---
+
+    /**
+     * Essential for IDs as requested.
+     */
+    public Long getLong(String key) {
+        String val = getOrThrow(key);
+        try {
+            return Long.parseLong(val);
+        } catch (NumberFormatException e) {
+            throw new ConfigException("Key '" + key + "' must be a Long (ID), but was: " + val);
+        }
     }
 
     public int getInt(String key) {
@@ -91,16 +86,25 @@ public class BotProperties {
         try {
             return Integer.parseInt(val);
         } catch (NumberFormatException e) {
-            throw new ConfigException("Key '" + key + "' soll eine Zahl sein, ist aber: " + val);
+            throw new ConfigException("Key '" + key + "' must be an Integer, but was: " + val);
         }
     }
 
     public boolean getBoolean(String key) {
-        String val = getOrThrow(key);
+        String val = getOrDefault(key, "false");
         return val.equalsIgnoreCase("true") || val.equalsIgnoreCase("1") || val.equalsIgnoreCase("yes");
     }
 
-    // --- Exception Handling ---
+    public List<String> getList(String key) {
+        return get(key)
+                .map(s -> Arrays.stream(s.split(","))
+                        .map(String::trim)
+                        .filter(item -> !item.isEmpty())
+                        .collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
+    }
+
+    // --- Custom Exception ---
     public static class ConfigException extends RuntimeException {
         public ConfigException(String message) { super(message); }
         public ConfigException(String message, Throwable cause) { super(message, cause); }
