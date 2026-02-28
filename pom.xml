@@ -7,18 +7,24 @@
 
     <groupId>de.max</groupId>
     <artifactId>bot-properties</artifactId>
-    <version>1.0.0</version>
-    <name>Bot Properties</name>
-    <description>Simple type-safe bot.properties loader for Java</description>
+    <version>1.1.4</version>
+    <name>Bot Properties &amp; Permissions</name>
+    <description>Type-safe properties loader and easy JDA permission system</description>
     <url>https://github.com/maxytmaxyt/bot-properties</url>
 
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+        <jda.version>5.3.0</jda.version> </properties>
 
     <dependencies>
-        </dependencies>
+        <dependency>
+            <groupId>net.dv8tion</groupId>
+            <artifactId>JDA</artifactId>
+            <version>${jda.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 
     <distributionManagement>
         <repository>
@@ -63,6 +69,9 @@
                         <goals>
                             <goal>jar</goal>
                         </goals>
+                        <configuration>
+                            <doclint>none</doclint> 
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
