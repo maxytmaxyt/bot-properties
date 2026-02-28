@@ -7,7 +7,7 @@
 
     <groupId>de.max</groupId>
     <artifactId>bot-properties</artifactId>
-    <version>1.1.4</version>
+    <version>1.2.1</version>
     <name>Bot Properties &amp; Permissions</name>
     <description>Type-safe properties loader and easy JDA permission system</description>
     <url>https://github.com/maxytmaxyt/bot-properties</url>
