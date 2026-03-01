@@ -1,7 +1,7 @@
 package de.max.helper;
 
-import net.dv8tion.jda.api.interactions.components.LayoutComponent;
-import net.dv8tion.jda.api.interactions.modals.Modal;
+import net.dv8tion.jda.api.components.LayoutComponent;
+import net.dv8tion.jda.api.modals.Modal;
 import net.dv8tion.jda.api.components.label.Label;
 import net.dv8tion.jda.api.components.textinput.TextInput;
 import net.dv8tion.jda.api.components.textinput.TextInputStyle;
@@ -43,14 +43,15 @@ public class ModalHelper {
      * @return Chained helper instance.
      */
     public ModalHelper addInput(String id, String label, TextInputStyle style, boolean required, int min, int max) {
-        /* Correct usage of the new JDA 6.3.0 TextInput API */
-        TextInput input = TextInput.create(id, label, style)
+        /* JDA 6.x change: create(id, style) then setLabel(label) */
+        TextInput input = TextInput.create(id, style)
+                .setLabel(label)
                 .setRequired(required)
                 .setMinLength(min)
                 .setMaxLength(max)
                 .build();
         
-        /* JDA 6.3.0: Label.of automatically handles the ActionRow wrapping */
+        /* Using the new Label.of for automatic ActionRow wrapping */
         this.components.add(Label.of(label, input));
         return this;
     }
@@ -85,6 +86,7 @@ public class ModalHelper {
             throw new IllegalStateException("A modal must have at least one input field!");
         }
 
+        /* JDA 6.x Modal.create(id, title) */
         return Modal.create(modalId, modalTitle)
                 .addComponents(components)
                 .build();
