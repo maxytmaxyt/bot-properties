@@ -31,7 +31,7 @@ jobs:
           server-id: github 
 
       - name: Publish to GitHub Packages
-        run: mvn -B deploy
+        run: mvn clean -B deploy
         env:
           # Der GITHUB_TOKEN wird automatisch von GitHub bereitgestellt
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
