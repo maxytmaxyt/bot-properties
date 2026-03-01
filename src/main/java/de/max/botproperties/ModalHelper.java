@@ -1,4 +1,4 @@
-package de.max.modal;
+package de.max.helper;
 
 import net.dv8tion.jda.api.interactions.components.LayoutComponent;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
