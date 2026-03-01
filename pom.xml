@@ -15,7 +15,8 @@
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jda.version>5.3.0</jda.version> </properties>
+        <jda.version>6.3.0</jda.version> 
+    </properties>
 
     <dependencies>
         <dependency>
