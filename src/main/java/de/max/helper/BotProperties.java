@@ -1,4 +1,4 @@
-package de.max.botproperties;
+package de.max.helper;
 
 import java.io.IOException;
 import java.nio.file.Files;
