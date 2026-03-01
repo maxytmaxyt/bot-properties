@@ -1,16 +1,10 @@
 package de.max.helper;
 
 import net.dv8tion.jda.api.interactions.components.LayoutComponent;
-import net.dv8tion.jda.api.interactions.components.text.TextInput;
-import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
-import net.dv8tion.jda.api.interactions.modals.ModalMapping;
-import net.dv8tion.jda.api.modals.Modal;
-import net.dv8tion.jda.api.components.label.Label;
+import net.dv8tion.jda.api.interactions.modals.Modal;
 import net.dv8tion.jda.api.components.label.Label;
 import net.dv8tion.jda.api.components.textinput.TextInput;
 import net.dv8tion.jda.api.components.textinput.TextInputStyle;
-import net.dv8tion.jda.api.interactions.modals.ModalMapping;
-import net.dv8tion.jda.api.modals.Modal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +35,7 @@ public class ModalHelper {
     /**
      * Adds a highly customizable text input field.
      * @param id Field identifier.
-     * @param label Label shown above the field.
+     * @param label Text shown above the field.
      * @param style SHORT or PARAGRAPH.
      * @param required If true, user must provide input.
      * @param min Minimum character length.
@@ -49,6 +43,7 @@ public class ModalHelper {
      * @return Chained helper instance.
      */
     public ModalHelper addInput(String id, String label, TextInputStyle style, boolean required, int min, int max) {
+        /* Correct usage of the new JDA 6.3.0 TextInput API */
         TextInput input = TextInput.create(id, label, style)
                 .setRequired(required)
                 .setMinLength(min)
