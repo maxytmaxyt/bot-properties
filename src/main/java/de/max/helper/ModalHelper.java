@@ -1,10 +1,10 @@
 package de.max.helper;
 
-import net.dv8tion.jda.api.components.LayoutComponent;
-import net.dv8tion.jda.api.modals.Modal;
-import net.dv8tion.jda.api.components.label.Label;
-import net.dv8tion.jda.api.components.textinput.TextInput;
-import net.dv8tion.jda.api.components.textinput.TextInputStyle;
+import net.dv8tion.jda.api.interactions.components.LayoutComponent;
+import net.dv8tion.jda.api.interactions.modals.Modal;
+import net.dv8tion.jda.api.components.label.Label; // Kept as requested
+import net.dv8tion.jda.api.interactions.components.text.TextInput;
+import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,16 +30,14 @@ public class ModalHelper {
      * Adds a customizable text input field.
      */
     public ModalHelper addInput(String id, String label, TextInputStyle style, boolean required, int min, int max) {
-        /* * FIX: TextInput.create(id, style) instead of (id, label, style)
-         * We then set the label via .setLabel(label)
-         */
-        TextInput input = TextInput.create(id, style)
-                .setLabel(label)
+        // Standard JDA 6.3.0 construction: (id, label, style)
+        TextInput input = TextInput.create(id, label, style)
                 .setRequired(required)
                 .setMinLength(min)
                 .setMaxLength(max)
                 .build();
         
+        // Kept Label.of as explicitly requested
         this.components.add(Label.of(label, input));
         return this;
     }
@@ -57,6 +55,7 @@ public class ModalHelper {
             throw new IllegalStateException("A modal must have at least one input field!");
         }
 
+        // Updated Modal creation for JDA 6.3.0
         return Modal.create(modalId, modalTitle)
                 .addComponents(components)
                 .build();
