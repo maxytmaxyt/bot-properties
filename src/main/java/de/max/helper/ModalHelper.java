@@ -1,15 +1,16 @@
 package de.max.helper;
 
-import net.dv8tion.jda.api.components.LayoutComponent;
-import net.dv8tion.jda.api.modals.Modal;
-import net.dv8tion.jda.api.components.label.Label; // Kept as requested
+import net.dv8tion.jda.api.components.label.Label;
 import net.dv8tion.jda.api.components.textinput.TextInput;
 import net.dv8tion.jda.api.components.textinput.TextInputStyle;
+import net.dv8tion.jda.api.components.LayoutComponent;
+import net.dv8tion.jda.api.modals.Modal;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Advanced Multi-Input Modal Builder for JDA 6.3.0.
+ * Adjusted to match the structure of ChatFilterListener.
  */
 public class ModalHelper {
 
@@ -27,21 +28,20 @@ public class ModalHelper {
     }
 
     /**
-     * Adds a customizable text input field.
+     * Adds a customizable text input field using Label.of.
      */
     public ModalHelper addInput(String id, String label, TextInputStyle style, boolean required, int min, int max) {
         /*
-         * Fixed for JDA 6.3.0: TextInput.create only accepts (String, TextInputStyle).
-         * The label must be set via .setLabel().
+         * Following your reference: TextInput.create(id, style) without the label.
+         * The label is handled by the Label.of wrapper below.
          */
         TextInput input = TextInput.create(id, style)
-                .setLabel(label)
                 .setRequired(required)
                 .setMinLength(min)
                 .setMaxLength(max)
                 .build();
         
-        // Retaining Label.of as requested
+        // Wrapping the input in Label.of as seen in ChatFilterListener
         this.components.add(Label.of(label, input));
         return this;
     }
@@ -59,7 +59,6 @@ public class ModalHelper {
             throw new IllegalStateException("A modal must have at least one input field!");
         }
 
-        // Using Modal.create from net.dv8tion.jda.api.modals
         return Modal.create(modalId, modalTitle)
                 .addComponents(components)
                 .build();
