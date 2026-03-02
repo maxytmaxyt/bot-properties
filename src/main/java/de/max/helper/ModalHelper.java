@@ -1,8 +1,6 @@
 package de.max.helper;
 
-import net.dv8tion.jda.api.components.label.Label;
-import net.dv8tion.jda.api.components.label.LabelChildComponent;
-import net.dv8tion.jda.api.interactions.components.textinput.TextInput;
+import net.dv8tion.jda.api.components.*;
 import net.dv8tion.jda.api.interactions.components.textinput.TextInputStyle;
 import net.dv8tion.jda.api.modals.Modal;
 
