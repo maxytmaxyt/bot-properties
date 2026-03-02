@@ -25,7 +25,7 @@ public class ModalHelper {
     }
 
     public ModalHelper addInput(String id, String label, TextInputStyle style, boolean required, int min, int max) {
-        TextInput input = TextInput.create(id, label, style)
+        TextInput input = TextInput.create(id, style)
                 .setRequired(required)
                 .setMinLength(min)
                 .setMaxLength(max)
