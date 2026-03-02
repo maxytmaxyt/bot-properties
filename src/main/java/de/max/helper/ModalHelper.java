@@ -2,8 +2,8 @@ package de.max.helper;
 
 import net.dv8tion.jda.api.components.label.Label;
 import net.dv8tion.jda.api.components.label.LabelChildComponent;
-import net.dv8tion.jda.api.components.textinput.TextInput;
-import net.dv8tion.jda.api.components.textinput.TextInputStyle;
+import net.dv8tion.jda.api.interactions.components.textinput.TextInput;
+import net.dv8tion.jda.api.interactions.components.textinput.TextInputStyle;
 import net.dv8tion.jda.api.modals.Modal;
 
 import java.util.ArrayList;
@@ -24,33 +24,35 @@ public class ModalHelper {
         return new ModalHelper(id, title);
     }
 
-    public ModalHelper addInput(String id, String label, TextInputStyle style, boolean required, int min, int max) {
+    public ModalHelper addInput(String id, String labelText, TextInputStyle style,
+                                boolean required, int minLength, int maxLength) {
+
         TextInput input = TextInput.create(id, style)
                 .setRequired(required)
-                .setMinLength(min)
-                .setMaxLength(max)
+                .setMinLength(minLength)
+                .setMaxLength(maxLength)
                 .build();
 
-        components.add(Label.of(label, input));
+        components.add(Label.of(labelText, input));
         return this;
     }
 
-    public ModalHelper addParagraph(String id, String label) {
-        return addInput(id, label, TextInputStyle.PARAGRAPH, true, 1, 2000);
+    public ModalHelper addParagraph(String id, String labelText) {
+        return addInput(id, labelText, TextInputStyle.PARAGRAPH, true, 1, 2000);
     }
 
-    public ModalHelper addShortInput(String id, String label) {
-        return addInput(id, label, TextInputStyle.SHORT, true, 1, 100);
+    public ModalHelper addShortInput(String id, String labelText) {
+        return addInput(id, labelText, TextInputStyle.SHORT, true, 1, 100);
     }
 
-    public ModalHelper addComponent(String label, LabelChildComponent component) {
-        components.add(Label.of(label, component));
+    public ModalHelper addComponent(String labelText, LabelChildComponent component) {
+        components.add(Label.of(labelText, component));
         return this;
     }
 
     public Modal build() {
         if (components.isEmpty()) {
-            throw new IllegalStateException("A modal must have at least one component");
+            throw new IllegalStateException("Modal must contain at least one component");
         }
 
         return Modal.create(modalId, modalTitle)
